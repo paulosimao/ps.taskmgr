@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="w2ui.css"/>
+    <script src="jquery.js"></script>
+    <script type="text/javascript" src="w2ui.js"></script>
+    <script type="text/javascript" src="facade.js"></script>
+    <title>List of Items</title>
+</head>
+<body>
+<div id="grid" style="width: 100%; height: 600px;"></div>
+</body>
+<script>
+    $('#grid').w2grid({
+        name: 'grid',
+        show: {
+            toolbar: true,
+            footer: true,
+            toolbarAdd: true,
+            toolbarDelete: true,
+            toolbarSave: true,
+            toolbarEdit: true
+        },
+        onAdd: function (event) {
+            var name = prompt('Task Name', 'task');
+            crudfacade.c('task', {name: name}, function (data) {
+                console.log(data);
+                w2ui.grid.add(data.res);
+            })
+            ;
+        },
+        onEdit: function (event) {
+            w2alert('edit');
+        },
+        onDelete: function (event) {
+            console.log('delete has default behaviour');
+            crudfacade.d('task', w2ui.grid.getSelection()[0], function (data) {
+                if (data.err) {
+                    alert(data.err);
+                }
+            });
+        },
+        onChange: function (event) {
+            col     = event.column;
+            value   = event.value_new;
+            recid   = event.recid;
+            colname = w2ui.grid.columns[col].field;
+            crudfacade.u('task', recid, colname, value, function (res) {
+                if (res.err) {
+                    alert(err);
+                } else {
+                    w2ui.grid.save();
+                }
+            });
+            console.log(event);
+//            crudfacade.updateTask(w2ui.grid.getSelection()[0], function (data) {
+//                if (data.err) {
+//                    alert(data.err);
+//                }
+//            });
+        },
+        onLoad: function (event) {
+            w2ui.grid.clear();
+            crudfacade.r('task', {}, function (data) {
+                w2ui.grid.add(data.res);
+            });
+
+        },
+        onReload: function (event) {
+            w2ui.grid.clear();
+            crudfacade.r('task', {}, function (data) {
+                w2ui.grid.add(data.res);
+            });
+        },
+        header: 'List of Names',
+        columns: [
+            {
+                field: 'complete',
+                caption: 'Complete',
+                size: '10%',
+                sortable: true,
+                searchable: true,
+                editable: {type: 'check'}
+            },
+            {
+                field: 'name',
+                caption: 'Task Name',
+                size: '30%',
+                sortable: true,
+                searchable: true,
+                editable: {type: 'text'}
+            }
+        ],
+        records: []
+    });
+
+    crudfacade.r('task', {}, function (data) {
+        w2ui.grid.add(data.res);
+    });
+</script>
+</html>
